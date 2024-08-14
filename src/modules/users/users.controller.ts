@@ -1,14 +1,29 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { ApiBody, ApiConflictResponse, ApiTags } from '@nestjs/swagger';
+
+import { UpdateUserDto } from './dto/req/update-user.dto';
+import { UserCreateDto } from './dto/req/userCreate.dto';
+import { UserResponseDto } from './dto/res/userResponse.dto';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+
+@ApiTags('Users')
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
+  @ApiBody({ type: UserCreateDto })
+  @ApiConflictResponse({ description: 'Access denied' })
+  create(@Body() createUserDto: UserResponseDto): UserResponseDto {
     return this.usersService.create(createUserDto);
   }
 
