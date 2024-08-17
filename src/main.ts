@@ -1,15 +1,21 @@
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+import { AppConfigType } from './configs/environmentsConfigType';
 import { AppModule } from './modules/app.module';
 
 async function bootstrap() {
   // main application declaration
   const app = await NestFactory.create(AppModule);
 
+  // add environment configuration to project using @nestjs/config
+  const envConfigService = app.get(ConfigService);
+  const appEnvConfig = envConfigService.get<AppConfigType>('app');
+
   // configuration of Swagger document
-  const config = new DocumentBuilder()
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('OKTEN Nest Home Work API')
     .setDescription('API description')
     .setVersion('1.0')
@@ -29,8 +35,8 @@ async function bootstrap() {
     .build();
 
   // Creation of Swagger document
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api-docs', app, document, {
+  const SwaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api-docs', app, SwaggerDocument, {
     swaggerOptions: {
       docExpansion: 'list',
       defaultModelExpandDepth: 1,
@@ -40,7 +46,7 @@ async function bootstrap() {
 
   // Pipes
   app.useGlobalPipes(
-    // Validation
+    // Validation of DTO
     new ValidationPipe({
       // if DTO without decorators whole DTO won't be allowed
       whitelist: true,
@@ -50,14 +56,16 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  const port = 3000;
-  const host = 'localhost';
 
   // Start-up of server
-  await app.listen(port, () => {
+  await app.listen(appEnvConfig.port, () => {
     // Logger - Nest log instead of console.log
-    Logger.log(`Server started on: http://${host}:${port}`);
-    Logger.log(`Swagger is available on: http://${host}:${port}/api-docs`);
+    Logger.log(
+      `Server started on: http://${appEnvConfig.host}:${appEnvConfig.port}`,
+    );
+    Logger.log(
+      `Swagger is available on: http://${appEnvConfig.host}:${appEnvConfig.port}/api-docs`,
+    );
   });
 }
 

@@ -9,6 +9,8 @@ import {
   Matches,
 } from 'class-validator';
 
+import { TransformHelper } from '../../../../common/helpers/Transform.helper';
+
 class carDto {
   @IsString()
   @Length(2, 20)
@@ -28,7 +30,8 @@ export class UserCreateDto {
   // @MinLength(3)
   @Length(3, 20)
   @IsOptional()
-  @Transform(({ /* type,obj,key,value,options */ value }) => value.trim())
+  // @Transform(({ /* type,obj,key,value,options */ value }) => value.trim())
+  @Transform(TransformHelper.trim)
   name?: string;
 
   @ApiProperty({ description: 'Is user emails verified', default: false })
@@ -38,13 +41,14 @@ export class UserCreateDto {
   @IsString()
   // @IsEmail()
   @Matches(/^\S+@\S+\.\S+$/, {})
-  @Transform(({ /* type,obj,key,value,options */ value }) => value.trim())
+  @Transform(TransformHelper.trim)
   // @Matches(/* Regular expression */)
   @ApiProperty({ example: 'cheater@gmail.com' })
   email: string;
 
   @IsString()
-  @Transform(({ /* type,obj,key,value,options */ value }) => value.trim())
+  // @Transform(({ /* type,obj,key,value,options */ value }) => value.trim())
+  @Transform(TransformHelper.trim)
   @Matches(/^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/, {
     context: 'sfsefsfse',
     message:
@@ -55,7 +59,7 @@ export class UserCreateDto {
   password: string;
 
   @IsOptional()
-  @Transform(({ /* type,obj,key,value,options */ value }) => value.trim())
+  @Transform(TransformHelper.trim)
   birthday: string;
 
   car: carDto;
