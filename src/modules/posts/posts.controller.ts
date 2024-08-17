@@ -6,12 +6,16 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 
-import { CreatePostDto } from './dto/create-post.dto';
-import { UpdatePostDto } from './dto/update-post.dto';
-import { PostsService } from './posts.service';
+import { CreatePostDto } from './dto/req/create-post.dto';
+import { PostsListReqDto } from './dto/req/posts_list.req.dto';
+import { UpdatePostDto } from './dto/req/update-post.dto';
+import { PostsService } from './services/posts.service';
 
+@ApiTags('Posts')
 @Controller('posts')
 export class PostsController {
   constructor(private readonly postsService: PostsService) {}
@@ -22,8 +26,8 @@ export class PostsController {
   }
 
   @Get()
-  findAll() {
-    return this.postsService.findAll();
+  findAll(@Query() query: PostsListReqDto) {
+    return this.postsService.findAll(query);
   }
 
   @Get(':id')
