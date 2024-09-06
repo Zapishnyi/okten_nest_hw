@@ -1,43 +1,51 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { GetStoredDataFromResponse } from './decorators/get-stored-data-from-response.decorator';
+import { SkipAuth } from './decorators/skip-auth.decorator';
+import { SingInAuthResDto } from './dto/req/singInAuth.req.dto';
+import { SingUpAuthReqDto } from './dto/req/singUpAuth.req.dto';
+import { AuthResDto } from './dto/res/auth.res.dto';
+import { TokenPairResDto } from './dto/res/userTokenPair.res.dto';
+import { JwtRefreshGuard } from './guard/jwt_refresh.guard';
+import { IUserData } from './interfaces/IUserData';
 import { AuthService } from './services/auth.service';
 
+@ApiTags('Authorization')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  @SkipAuth()
+  @Post('sing-up')
+  public async singUp(@Body() dto: SingUpAuthReqDto): Promise<AuthResDto> {
+    return await this.authService.singUp(dto);
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @SkipAuth()
+  @Post('sing-in')
+  public async singIn(@Body() dto: SingInAuthResDto): Promise<AuthResDto> {
+    return await this.authService.singIn(dto);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  // Skip access token check
+  @SkipAuth()
+  // add refresh token check
+  @UseGuards(JwtRefreshGuard)
+  // Add authorization marker to endpoint in Swagger
+  @ApiBearerAuth()
+  @Post('refresh')
+  public async refresh(
+    @GetStoredDataFromResponse() userData: IUserData,
+  ): Promise<TokenPairResDto> {
+    return await this.authService.refresh(userData);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @ApiBearerAuth()
+  @Post('sign-out')
+  async signOut(
+    @GetStoredDataFromResponse() userData: IUserData,
+  ): Promise<void> {
+    await this.authService.signOut(userData);
   }
 }

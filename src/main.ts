@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-import { AppConfigType } from './configs/environmentsConfigType';
+import { AppConfigType } from './configs/envConfigType';
 import { AppModule } from './modules/app.module';
 
 async function bootstrap() {
@@ -13,6 +13,7 @@ async function bootstrap() {
   // add environment configuration to project using @nestjs/config
   const envConfigService = app.get(ConfigService);
   const appEnvConfig = envConfigService.get<AppConfigType>('app');
+  // const { dsn } = envConfigService.get<SentryConfigType>('sentry');
 
   // configuration of Swagger document
   const swaggerConfig = new DocumentBuilder()
@@ -38,8 +39,12 @@ async function bootstrap() {
   const SwaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api-docs', app, SwaggerDocument, {
     swaggerOptions: {
+      // type of lists representation
       docExpansion: 'list',
+      // Expansion depth
       defaultModelExpandDepth: 1,
+      // eslint-disable-next-line max-len
+      // authorization credentials (like an access token, JWT, or session token) will be stored and reused across multiple requests or sessions.
       persistAuthorization: true,
     },
   });
